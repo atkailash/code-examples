@@ -3,14 +3,17 @@ from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
 from models import CoordinateForm
 
+
 class Config(object):
     SECRET_KEY = "NOTSOSECRET" # Can also be env variable or file
     DEBUG = True
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
 Bootstrap(app)
-                
+
+
 @app.route("/", methods=["GET", "POST"])
 def main_page():
     form = CoordinateForm(request.form)
