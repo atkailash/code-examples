@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template, request
+from flask import Flask, session, render_template, request, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 from models import CoordinateForm
+from hashlib import md5
+import random
+import string
+import lrucache
 
+LRU = lrucache.LRUCache(3000)
 
 class Config(object):
     SECRET_KEY = "NOTSOSECRET" # Can also be env variable or file
@@ -23,29 +28,42 @@ def main_page():
         print(f"Method: {request.method}")
         return render_template("index.jinja2", form=form)
     elif form.validate_on_submit:
-        print("Ok submit")
-        return "Ok submit!"
+        lat = form.lat.data
+        long = form.long.data
+        print(f"Lat Type: {type(lat)}, value: {lat}")
+        print(f"Long Type: {type(long)}, value: {long}")
+        session['lat'] = float(lat)
+        session['long'] = float(long)
+        return redirect(url_for("receive_input", lat, long))
     else:
         print("I dunno")
 
-@app.route("/receive")
+@app.route("/submit", methods=["POST"])
 def receive_input(lat, long):
-    try:
-        lat = float(lat)
-        long = float(long)
-        if lat not in range(-90,91):
-            raise ValueError(f"Latitude {lat} is out of bounds (not between -90 and 90)")
-        elif long not in range(-180,181):
-            raise ValueError(f"Longtitude {long} is out of bounds (not between -180 and 180)")
-        else:
-            image_name = GetImageURL(lat, long)
-            return(200, image_name)
+#    lat = session['lat']
+#    long = session['long']
+    coords = str([lat, long])
+    url = LRU.get(coords)
+
+        url = "https://marscoords.burks/" + GetURL(lat, long)
+
+        return redirect(url_for("show_url"))
     except ValueError as ve:
         print(f"Value Error: {ve}")
         return render_template("value_error.html"), 501
 
-#@app.errorhandler(501)
-#def not_implemented(error):
+@app.route("/show_url", methods=["GET"])
+def show_url(lat, long):
+    
+
+@app.errorhandler(501)
+def not_implemented(error):
+    return "Oops"
+
+def GetURL(lat, long):
+    new_url = ""
+    for x in range(30): new_url += random.choice(string.ascii_letters + string.digits)
+    return new_url
 
 if __name__ == "__main__":
     app.run()

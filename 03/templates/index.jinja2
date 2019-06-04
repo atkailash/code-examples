@@ -7,7 +7,7 @@
     <h1>Input coordinates</h1>
     <hr>
 
-    <form action="" method="POST" role="form" class="form">
+    <form action="/submit" method="POST" role="form" class="form">
         {{ form.csrf_token() }}
         <dl>
             {{ wtf.form_field(form.lat, class="form-control", placeholder="Latitude from -90.0 to 90.0", size=25) }}

@@ -7,7 +7,7 @@ class CoordsURLPair(object):
         self.key = str(coords)
 
     def __repr__(self):
-        return f"CoordsURLPair('{self.key}'', '{self.value}')"
+        return f"CoordsURLPair('{self.key}', '{self.value}')"
 
     def __str__(self):
         return f"('{self.key}', '{self.value}')"
@@ -16,7 +16,7 @@ class CoordsURLPair(object):
         return hash((self.key, self.value))
 
     def __eq__(self, other):
-        return hash(self) == hash(other)
+        return isinstance(other, CoordsURLPair) and (hash(self) == hash(other))
 
     
 class LRUCache(object):
@@ -40,7 +40,8 @@ class LRUCache(object):
         """
         coords = str(coords)
         if len(self.pair_dq) == self.capacity:
-            least_recent = self.pair_dq.pop().key
+            # Pop and save it so we can remove from dict
+            least_recent = self.pair_dq.pop().key # We use left for append so this needs to be normal
             del self.dict_of_pairs[least_recent] # Frees memory, faster than popitem and doesn't return
         entry = CoordsURLPair(coords, url)
         self.pair_dq.appendleft(entry)
