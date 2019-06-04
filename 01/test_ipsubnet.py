@@ -1,5 +1,6 @@
-import pytest
 import ipsubnet
+import pytest
+
 
 class TestClass(object):
     def test_convert_to_binary(self):

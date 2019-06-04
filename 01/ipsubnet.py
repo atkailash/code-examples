@@ -2,7 +2,8 @@
 import argparse
 
 argparser = argparse.ArgumentParser(prog="ipsubnet", description="IP CIDT Subnet calculator/checker")
-argparser.add_argument("-f", "--file", nargs=1, type=str, help="Filename to parse. Contents in <ip> <cidr> format per line.")
+argparser.add_argument("-f", "--file", nargs=1, type=str,
+                       help="Filename to parse. Contents in <ip> <cidr> format per line.")
 argparser.add_argument("-c", "--cidr", nargs=1, type=str, help="CIDR to check")
 argparser.add_argument("-i", "--ip", nargs=1, type=str, help="IP Address to check")
 
@@ -21,9 +22,9 @@ def read_file(input_file):
     try:
         a_file = open(input_file, "r")
         for line in a_file:
-            split_line = line.rstrip("\n").split("#") # Remove comment first
-            if len(split_line) <= 2: # IP/CDR is [0] and comment is [1], will also work if it's just IP/CDR
-                split_line = split_line[0].split() # Remove the comment
+            split_line = line.rstrip("\n").split("#")  # Remove comment first
+            if len(split_line) <= 2:  # IP/CDR is [0] and comment is [1], will also work if it's just IP/CDR
+                split_line = split_line[0].split()  # Remove the comment
                 list_of_ip_cidr.append(split_line)
             else:
                 raise ValueError("Less than two columns found. Cannot compare to nothing.")
@@ -64,7 +65,7 @@ def convert_to_binary(an_ip):
     try:
         for octet in octets:
             if len(octet) <= 3 and int(octet) <= 255:
-                bin_octet_list.append(format(int(octet), '08b'))    
+                bin_octet_list.append(format(int(octet), '08b'))
             else:
                 raise ValueError(f"Octet {octet} in {an_ip} invalid.")
         bin_ip = "".join(bin_octet_list)
@@ -77,6 +78,7 @@ def convert_to_binary(an_ip):
         print(e)
         print("Quitting: please resolve the error")
         quit(3)
+
 
 def check_cidr(ip_cidr_list):
     """
@@ -110,21 +112,21 @@ if __name__ == "__main__":
     the_cidr = args.cidr
     the_ip = args.ip
     try:
-        if the_file is not None: # -f is used
+        if the_file is not None:  # -f is used
             if the_cidr is not None or the_ip is not None:  # -c or -i is used
                 raise argparse.ArgumentError(the_file, "Cannot have CIDR/IP and File")
-            elif the_cidr is None or the_ip is None:        # no -c or -i
+            elif the_cidr is None or the_ip is None:  # no -c or -i
                 list_ip_cidr_list = read_file(the_file[0])
                 for ip_and_cidr in list_ip_cidr_list:
                     result = check_cidr(ip_and_cidr)
                     print(f"IP: {ip_and_cidr[0]} in {ip_and_cidr[1]} = {result}")
             else:
                 raise argparse.ArgumentError()
-        elif the_ip is not None and the_cidr is None:       # -i not -c
+        elif the_ip is not None and the_cidr is None:  # -i not -c
             raise argparse.ArgumentError(the_cidr, "Must have both CIDR and IP")
-        elif the_cidr is not None and the_ip is None:       # -c not -i
+        elif the_cidr is not None and the_ip is None:  # -c not -i
             raise argparse.ArgumentError(the_ip, "Must have both CIDR and IP")
-        elif the_cidr is not None and the_ip is not None:                                               # -c -i not -f
+        elif the_cidr is not None and the_ip is not None:  # -c -i not -f
             the_ip = the_ip[0]
             the_cidr = the_cidr[0]
             result = check_cidr([the_ip, the_cidr])

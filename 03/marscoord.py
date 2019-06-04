@@ -7,10 +7,10 @@ import lrucache
 from flask import Flask, session, render_template, request, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_bootstrap.nav import BootstrapRenderer
-from markupsafe import Markup
 from models import CoordinateForm
 from flask_nav import Nav
 from flask_nav.elements import *
+
 LRU = lrucache.LRUCache(3000)
 
 
@@ -24,19 +24,22 @@ app.config.from_object(Config)
 Bootstrap(app)
 nav = Nav()
 nav.renderer(id=BootstrapRenderer, force=True)
+
+
 @nav.navigation()
 def the_bar():
     return Navbar("Mars Coords",
                   View("Enter Coordinates", "main_page"),
                   Subgroup("Show",
-                            View("Counters", "show_counters"),
-                            View("Show Everything", "show_all")
-                            ),
+                           View("Counters", "show_counters"),
+                           View("Show Everything", "show_all")
+                           ),
                   Subgroup("Clear",
-                            View("Clear Counters", "clear_counters"),
-                            View("Clear Everything!", "clear_all")
-                            )
+                           View("Clear Counters", "clear_counters"),
+                           View("Clear Everything!", "clear_all")
+                           )
                   )
+
 
 nav.init_app(app)
 
@@ -129,6 +132,7 @@ def clear_all():
         return redirect(url_for("show_all"))
     else:
         return 501
+
 
 @app.route("/show_all", methods=["GET"])
 def show_all():

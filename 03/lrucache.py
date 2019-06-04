@@ -18,12 +18,12 @@ class CoordsURLPair(object):
     def __eq__(self, other):
         return isinstance(other, CoordsURLPair) and (hash(self) == hash(other))
 
-    
+
 class LRUCache(object):
     def __init__(self, capacity):
         self.pair_dq = deque(maxlen=capacity)
         self.capacity = capacity
-        self.dict_of_pairs = {} # Acts as a map
+        self.dict_of_pairs = {}  # Acts as a map
         self.num_hits = 0
         self.num_miss = 0
 
@@ -41,13 +41,12 @@ class LRUCache(object):
         coords = str(coords)
         if len(self.pair_dq) == self.capacity:
             # Pop and save it so we can remove from dict
-            least_recent = self.pair_dq.pop().key # We use left for append so this needs to be normal
-            del self.dict_of_pairs[least_recent] # Frees memory, faster than popitem and doesn't return
+            least_recent = self.pair_dq.pop().key  # We use left for append so this needs to be normal
+            del self.dict_of_pairs[least_recent]  # Frees memory, faster than popitem and doesn't return
         entry = CoordsURLPair(coords, url)
         self.pair_dq.appendleft(entry)
         self.dict_of_pairs[coords] = entry
         self.num_miss += 1
-
 
     def _dqupdate(self, a_pair):
         """
