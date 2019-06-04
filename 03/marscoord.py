@@ -22,7 +22,7 @@ def main_page():
         print("Not validated or not a post")
         print(f"Method: {request.method}")
         return render_template("index.jinja2", form=form)
-    if request.method == "POST":
+    elif form.validate_on_submit:
         print("Ok submit")
         return "Ok submit!"
     else:
