@@ -1,0 +1,24 @@
+{% extends "bootstrap/base.html" %}
+{% include "header.jinja2" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Mars Image Confirmation{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+   {% if messages %}
+      {% for category,message in messages %}
+         <div class="alert alert-{{ category }}" role="alert">
+         {{ message }}
+      </div>
+      {% endfor %}
+   {% endif %}
+{% endwith %}
+<div class="container">
+    <h1>Clear Counters!</h1>
+    <hr>
+    <form action="/clear_counters" method="POST" class="form">
+        <input type="submit" value="Clear Counters" class="btn btn-warning">
+    </form>
+{% include "footer.jinja2" %}
+</div>
+{% endblock %}

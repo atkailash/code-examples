@@ -46,6 +46,8 @@ class LRUCache(object):
         entry = CoordsURLPair(coords, url)
         self.pair_dq.appendleft(entry)
         self.dict_of_pairs[coords] = entry
+        self.num_miss += 1
+
 
     def _dqupdate(self, a_pair):
         """
@@ -79,3 +81,15 @@ class LRUCache(object):
             return url
         except KeyError:
             return False
+
+    def clear_counters(self):
+        self.num_hits = 0
+        self.num_miss = 0
+
+    def clear_all(self):
+        self.clear_counters()
+        self.pair_dq.clear()
+        self.dict_of_pairs.clear()
+
+    def show_counters(self):
+        return f"Hits: {self.num_hits}, Misses: {self.num_miss}"
