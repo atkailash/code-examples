@@ -1,7 +1,6 @@
 import ipsubnet
 import pytest
 
-
 class TestClass(object):
     def test_convert_to_binary(self):
         assert ipsubnet.convert_to_binary("1.1.1.1") == "00000001000000010000000100000001"
