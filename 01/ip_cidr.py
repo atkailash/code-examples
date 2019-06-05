@@ -113,9 +113,9 @@ class Cidr(object):
         try:
             if not isinstance(an_ip, Ip):
                 new_ip = Ip(an_ip)
-                return self.ip_start.binip < new_ip.binip < self.ip_stop.binip
+                return self.ip_start.binip <= new_ip.binip <= self.ip_stop.binip
             elif isinstance(an_ip, Ip):
-                return self.ip_start.binip < an_ip.binip < self.ip_stop.binip
+                return self.ip_start.binip <= an_ip.binip <= self.ip_stop.binip
             else:
                 raise TypeError("Can only check string or Ip")
         except TypeError as te:
