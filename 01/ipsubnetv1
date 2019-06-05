@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 import argparse
-from ip_cidr import Ip, Cidr
-import csv
 
 argparser = argparse.ArgumentParser(prog="ipsubnet", description="IP CIDT Subnet calculator/checker")
 argparser.add_argument("-f", "--file", nargs=1, type=str,
                        help="Filename to parse. Contents in <ip> <cidr> format per line.")
 argparser.add_argument("-c", "--cidr", nargs=1, type=str, help="CIDR to check")
 argparser.add_argument("-i", "--ip", nargs=1, type=str, help="IP Address to check")
-argparser.add_argument("-o", "--out", nargs=1, type=str, help="Output file (CSV)")
 
 
 def read_file(input_file):
@@ -47,27 +44,67 @@ def read_file(input_file):
         a_file.close()
         if had_error:
             print("Quitting due to error.")
-            quit(4)  # 4 to differentiate from other quits
+            quit(4)
         else:
             return list_of_ip_cidr
 
 
-def write_csv(out_file, result_dict):
-    with open(out_file, 'w') as csv_out:
-        writer = csv.writer(csv_out, delimiter=",")
-        writer.writerow(["IP", "IS IN", "NETWORK", "PREFIX"])
-        for ip in result_dict:
-            cidr_net = result_dict[ip]['cidr'].network.ip_addr
-            cidr_prefix = result_dict[ip]['cidr'].prefix
-            isin = result_dict[ip]['isin']
-            writer.writerow([ip.ip_addr, isin, cidr_net, cidr_prefix])
+def convert_to_binary(an_ip):
+    """
+    Takes IP address and converts it to binary
+
+    Parameter:
+    an_ip (str): IP Address to convert
+
+    Returns:
+    bin_ip (str): IP Address in binary
+    """
+
+    octets = an_ip.split(".")
+    bin_octet_list = []
+    try:
+        for octet in octets:
+            if len(octet) <= 3 and int(octet) <= 255:
+                bin_octet_list.append(format(int(octet), '08b'))
+            else:
+                raise ValueError(f"Octet {octet} in {an_ip} invalid.")
+        bin_ip = "".join(bin_octet_list)
+        return bin_ip
+    except ValueError as ve:
+        print(ve)
+        print("Quitting: please fix the error")
+        quit(2)
+    except Exception as e:
+        print(e)
+        print("Quitting: please resolve the error")
+        quit(3)
 
 
-def process_ipcidr(ip, cidr):
-    ip = Ip(ip)
-    cidr_net, prefix = cidr.split("/")
-    return_cidr = Cidr(cidr_net, int(prefix))
-    return (ip, {"cidr": return_cidr, "isin": ip in return_cidr})
+def check_cidr(ip_cidr_list):
+    """
+    Calculate the cidr of given list that contains IP in 0 and
+    the CIDR in 1. This is being done manually instead of using the
+    ipaddress module.
+
+    Parameters:
+    ip_cidr_list (list): [ip, cidr]
+
+    Returns:
+    ip_in_cidr (bool): True if it is, False if not.
+    """
+
+    ip_address = ip_cidr_list[0]
+    [cidr_address, cidr_size] = ip_cidr_list[1].split("/")
+    cidr_size = int(cidr_size)  # Make it an int
+
+    bin_cidr_address = convert_to_binary(cidr_address)
+    bin_ip_address = convert_to_binary(ip_address)
+
+    bin_ip_network = bin_ip_address[0:cidr_size]
+    print(f"bin_ip_network:   {bin_ip_network}")
+    bin_cidr_network = bin_cidr_address[0:cidr_size]
+    print(f"bin_cidr_network: {bin_cidr_network}")
+    return bin_ip_network == bin_cidr_network
 
 
 if __name__ == "__main__":
@@ -75,36 +112,29 @@ if __name__ == "__main__":
     the_file = args.file
     the_cidr = args.cidr
     the_ip = args.ip
-    out_file = args.out
-    result = {}
     try:
         if the_file is not None:  # -f is used
-            the_file = the_file[0]
             if the_cidr is not None or the_ip is not None:  # -c or -i is used
                 raise argparse.ArgumentError(the_file, "Cannot have CIDR/IP and File")
             elif the_cidr is None or the_ip is None:  # no -c or -i
-                list_ip_cidr_list = read_file(the_file)
+                list_ip_cidr_list = read_file(the_file[0])
                 for ip_and_cidr in list_ip_cidr_list:
-                    an_ip, processed_dict = process_ipcidr(ip_and_cidr[0], ip_and_cidr[1])
-                    result[an_ip] = processed_dict
-                    print(f"IP: {an_ip} in {processed_dict['cidr']} = {processed_dict['isin']}")
+                    result = check_cidr(ip_and_cidr)
+                    print(f"IP: {ip_and_cidr[0]} in {ip_and_cidr[1]} = {result}")
             else:
                 raise argparse.ArgumentError()
         elif the_ip is not None and the_cidr is None:  # -i not -c
-            raise argparse.ArgumentError(the_cidr, "Must have both CIDR and IP (IP Provided)")
+            raise argparse.ArgumentError(the_cidr, "Must have both CIDR and IP")
         elif the_cidr is not None and the_ip is None:  # -c not -i
-            raise argparse.ArgumentError(the_ip, "Must have both CIDR and IP (CIDR Provided)")
+            raise argparse.ArgumentError(the_ip, "Must have both CIDR and IP")
         elif the_cidr is not None and the_ip is not None:  # -c -i not -f
             the_ip = the_ip[0]
             the_cidr = the_cidr[0]
-            an_ip, processed_dict = process_ipcidr(the_ip, the_cidr)
-            result[an_ip] = processed_dict
-            print(f"IP: {an_ip} in {processed_dict['cidr']} = {processed_dict['isin']}")
+            result = check_cidr([the_ip, the_cidr])
+            print(f"IP: {the_ip} in {the_cidr} = {result}")
         else:
             argparser.print_help()
             raise argparse.ArgumentError(the_file, "No valid arguments provided")
-        if out_file:
-            write_csv(out_file[0], result)
     except argparse.ArgumentError as ae:
         print(f"ArgumentError: {ae}")
         print("Args" + str(vars(args)))
