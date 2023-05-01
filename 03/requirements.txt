@@ -1,5 +1,5 @@
 Flask-Bootstrap==3.3.7.1.dev1
 Flask-WTF==0.14.2
 WTForms==2.2.1
-Flask==1.0.3
+Flask==2.3.2
 flask-nav>=0.6
